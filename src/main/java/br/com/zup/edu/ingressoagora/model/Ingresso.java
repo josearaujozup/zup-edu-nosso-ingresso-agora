@@ -15,6 +15,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 @Entity
 public class Ingresso {
 	@Id
@@ -44,31 +47,56 @@ public class Ingresso {
 	public Long getId() {
 		return id;
 	}
-	
+
 	public void setEstado(EstadoIngresso estado) {
 		this.estado = estado;
 	}
 
-	public boolean isNaoConsumido() {
-		boolean retorno = false;
+//	public boolean isNaoConsumido() {
+//		boolean retorno = false;
+//
+//		if (this.estado == EstadoIngresso.NAOCONSUMIDO) {
+//			retorno = true;
+//		}
+//
+//		System.out.println("teste: " + retorno);
+//		return retorno;
+//	}
+//
+//	public boolean isMinimoUmDiaAntes() {
+//		
+//		LocalDate hoje = LocalDate.now();
+//		Period periodo = Period.between(this.evento.getData(), hoje);
+//		
+//		if(periodo.getDays() >= 1) {
+//			return true;
+//		}
+//		
+//		return false;
+//	}
 
-		if (this.estado == EstadoIngresso.NAOCONSUMIDO) {
-			retorno = true;
+	public void cancela() {
+
+		if (!isNaoConsumido()) {
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,"Ingresso já consumido ou cancelado");
 		}
 
-		System.out.println("teste: " + retorno);
-		return retorno;
+		if (!isDentroDoPrazoDeCancelamento()) {
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,"Ingresso fora do prazo de cancelamento");
+		}
+
+		this.estado = EstadoIngresso.CANCELADO;
 	}
 
-	public boolean isMinimoUmDiaAntes() {
-		
+	private boolean isNaoConsumido() {
+		return this.estado == EstadoIngresso.NAOCONSUMIDO;
+	}
+
+	private boolean isDentroDoPrazoDeCancelamento() {
 		LocalDate hoje = LocalDate.now();
-		Period periodo = Period.between(this.evento.getData(), hoje);
-		
-		if(periodo.getDays() >= 1) {
-			return true;
-		}
-		
-		return false;
+		LocalDate dataDoEvento = this.evento.getData();
+		int prazoEmDias = Period.between(dataDoEvento, hoje).getDays();
+		return prazoEmDias >= 1;
 	}
+
 }

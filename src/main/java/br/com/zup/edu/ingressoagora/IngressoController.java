@@ -29,11 +29,13 @@ public class IngressoController {
 		
 		Ingresso ingresso = repository.findById(idIngresso).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"Ingresso não encontrado"));
 		
-		if(!ingresso.isNaoConsumido() || !ingresso.isMinimoUmDiaAntes()) {
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,"impossivel atualizar ingresso");
-		}
+//		if(!ingresso.isNaoConsumido() || !ingresso.isMinimoUmDiaAntes()) {
+//			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,"impossivel atualizar ingresso");
+//		}
+//		
+//		ingresso.setEstado(request.getEstado());
 		
-		ingresso.setEstado(request.getEstado());
+		ingresso.cancela();
 		
 		repository.save(ingresso);
 		
